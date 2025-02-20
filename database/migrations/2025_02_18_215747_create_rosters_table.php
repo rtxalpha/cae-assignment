@@ -40,10 +40,10 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('checkin_checkout_events', function (Blueprint $table) {
+        Schema::create('check_in_check_out_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
-            $table->foreignId('linked_flight_id')->constrained('flight_events')->onDelete('cascade');
+            $table->foreignId('linked_flight_id')->nullable()->constrained('flight_events')->onDelete('cascade');
             $table->string('airport_code', 10);
             $table->timestamps();
         });
