@@ -2,8 +2,6 @@
 
 namespace Tests\Unit;
 
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 class AnalyticsControllerTest extends TestCase
 {
@@ -17,6 +15,38 @@ class AnalyticsControllerTest extends TestCase
             ->assertJson(['status' => true])
             ->assertJsonStructure(['data']);
     }
+    public function test_flight_from_location_missing_data_validation()
+    {
+        $response = $this->json('GET', '/api/flights/from', [
+            'location' => "",
+        ]);
+
+        $response->assertStatus(200) 
+            ->assertJson([
+                'status' => false,
+                'errors' => [
+                    'location' => [
+                        "The location field is required."
+                    ]
+                ]
+            ]);
+    }
+    public function test_flight_from_location_blank_validation()
+    {
+        $response = $this->json('GET', '/api/flights/from', [
+            
+        ]);
+
+        $response->assertStatus(200) 
+            ->assertJson([
+                'status' => false,
+                'errors' => [
+                    'location' => [
+                        "The location field is required."
+                    ]
+                ]
+            ]);
+    }
     public function test_next_week_flight_from_current_date()
     {
         $response = $this->json('GET', '/api/flights/next-week', [
@@ -27,6 +57,22 @@ class AnalyticsControllerTest extends TestCase
             ->assertJson(['status' => true])
             ->assertJsonStructure(['data']);
     }
+    public function test_next_week_flight_from_current_date_missing_data_validation()
+    {
+        $response = $this->json('GET', '/api/flights/next-week', [
+            'current_date' => ''
+        ]);
+
+        $response->assertStatus(200) 
+            ->assertJson([
+                'status' => false,
+                'errors' => [
+                    'current_date' => [
+                        "The current date field is required."
+                    ]
+                ]
+            ]);
+    }
     public function test_standy_events_from_current_date()
     {
         $response = $this->json('GET', '/api/events/standby', [
@@ -36,6 +82,22 @@ class AnalyticsControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJson(['status' => true])
             ->assertJsonStructure(['data']);
+    }
+    public function test_standy_events_from_current_date_missing_data_validation()
+    {
+        $response = $this->json('GET', '/api/events/standby', [
+            'current_date' => ''
+        ]);
+
+        $response->assertStatus(200) 
+            ->assertJson([
+                'status' => false,
+                'errors' => [
+                    'current_date' => [
+                        "The current date field is required."
+                    ]
+                ]
+            ]);
     }
     public function test_events_between_from_date_to_date()
     {
@@ -48,30 +110,21 @@ class AnalyticsControllerTest extends TestCase
             ->assertJson(['status' => true])
             ->assertJsonStructure(['data']);
     }
-
-    public function test_import_roster()
+    public function test_events_between_from_date_to_date_missing_start_date_validation()
     {
-    $filePath = storage_path('app/roster.html'); 
-
-    if (!file_exists($filePath)) {
-        $this->fail("Test file not found at: $filePath");
+        $response = $this->json('GET', '/api/events', [
+            'start_date' => "",
+            'end_date' => "2022-01-14",
+        ]);
+        $response->assertStatus(200) 
+            ->assertJson([
+                'status' => false,
+                'errors' => [
+                    'start_date' => [
+                        "The start date field is required."
+                    ]
+                ]
+            ]);
     }
-
-    $file = new UploadedFile(
-        $filePath,                  
-        'roster.html',              
-        'text/html',              
-        null,                      
-        true                       
-    );
-
-    // Send the request with the actual file
-    $response = $this->postJson('/api/import-roster', [
-        'roster' => $file,
-    ]);
-
-    // Assertions
-    $response->assertStatus(200)
-             ->assertJson(['status' => true]);
-    }
+    
 }

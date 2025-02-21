@@ -14,9 +14,16 @@ use DOMDocument;
 use Illuminate\Support\Facades\DB;
 class ImportController extends Controller
 {
-    public function importRoster(ImportRosterRequest $request)
+    public function importRoster(Request $request)
     {
 
+        $validator = \Validator::make($request->all(), [
+            'roster' => 'required|file|mimes:html',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["status" => false, "errors" => $validator->errors()]);
+        }
         $file = $request->file('roster');
         $filePath = $file->store('rosters'); // Saves in storage/app/rosters
 
@@ -79,8 +86,9 @@ class ImportController extends Controller
 
     private function getFormattedDateIndex($dateText, &$startYear, &$startMonth, &$previousDay)
     // This logic detects when the month or year changes in the roster data. It assumes that the gap between consecutive days in the table is usually more than 26 days.
-// If the difference between the current day and the previous day is greater than 26, we assume the month has changed.
-// However, there may be other scenarios where this logic might not work correctly. 
+    // If the difference between the current day and the previous day is greater than 26, we assume the month has changed.
+    // However, there may be other scenarios where this logic might not work correctly. 
+
     {
         $buffer = explode(' ', trim($dateText));
         $day = (int) $buffer[1];
