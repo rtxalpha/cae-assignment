@@ -25,17 +25,12 @@ class ImportController extends Controller
             return response()->json(["status" => false, "errors" => $validator->errors()]);
         }
         $file = $request->file('roster');
-        $filePath = $file->store('rosters'); // Saves in storage/app/rosters
-
-        // Get full path
+        $filePath = $file->store('rosters'); 
         $fullPath = storage_path("app/{$filePath}");
-
-        // Read the stored file
         $content = file_get_contents($fullPath);
-        // $content = file_get_contents($file->getRealPath());
 
-        // dd($fullPath);
-        libxml_use_internal_errors(true);
+        libxml_use_internal_errors(true);  //remove unwanted errors
+
         $dom = new DOMDocument();
         $data = $dom->loadHTML($content);
         $xpath = new DOMXPath($dom);
@@ -104,9 +99,7 @@ class ImportController extends Controller
     }
     private function insertParsedDataToDatabase($parserMatrix, $filePath, $start_date, $end_date)
     {
-        // dd($parserMatrix, $fullPath,$start_date,$end_date);
-        // DB::transaction(function () {
-        // dd('hllo');
+
         DB::beginTransaction();
         try {
             $roster = Roster::create([
@@ -237,7 +230,6 @@ class ImportController extends Controller
             DB::rollBack();
             return ["status" => false, "message" => $e->getMessage(), 'file_name' => $e->getFile(), 'line_no' => $e->getLine(), 'code_snippet' => $e->getCode()];
         }
-        // });
     }
 
     private function dateformater($key, $time)
